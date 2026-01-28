@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classificador de Gênero Musical</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 800px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px -10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: none;
+            background-color: #f4f4f4;
+        }
+        button {
+            background: #007BFF;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #result {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        canvas {
+            margin-top: 20px;
+        }
+        .chart-title {
+            margin-top: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #555;
+        }
+        .model-accuracy {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #777;
+            font-style: italic;
+        }
+        #genreChart {
+            width: 550px !important;
+            height: 550px !important;
+            margin: 0px 125px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Prever Gênero Musical</h1>
+        <textarea id="letra" placeholder="A letra da música será exibida aqui..."></textarea>
+        <button onclick="enviarLetra()">Enviar</button>
+        <div id="result"></div>
+        <div class="chart-title">Músicas armazenadas no Dataset</div>
+        <canvas id="genreChart" width="300px" height="300px"></canvas>
+        <div class="model-accuracy">Precisão do modelo: 83%</div>
+        <div class="chart-title">Popularidade de Gêneros Musicais No Mundo (1990-2024)</div>
+        <canvas id="popularityChart" width="600" height="400"></canvas>
+    </div>
+
+    <script>
+        async function enviarLetra() {
+            const letra = document.getElementById('letra').value;
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = "Carregando...";
+
+            const response = await fetch("http://localhost:8080/predict", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ letra })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                resultDiv.textContent = `Gênero Predito: ${data.genero}`;
+                atualizarGraficoPizza();
+            } else {
+                resultDiv.textContent = "Erro ao prever o gênero.";
+            }
+        }
+
+        function atualizarGraficoPizza() {
+            const ctx = document.getElementById('genreChart').getContext('2d');
+            const data = {
+                labels: ['Funk', 'Sertanejo', 'Bossa Nova', 'Gospel'],
+                datasets: [{
+                    data: [500, 500, 500, 500],
+                    backgroundColor: ['#FF5733', '#33FF57', '#3357FF', '#FF33A1'],
+                }]
+            };
+            const options = {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' }
+                }
+            };
+            new Chart(ctx, { type: 'pie', data, options });
+        }
+
+        function gerarGraficoPopularidade() {
+            const ctx = document.getElementById('popularityChart').getContext('2d');
+            const data = {
+                labels: Array.from({ length: 35 }, (_, i) => 1990 + i), // Anos de 1990 a 2024
+                datasets: [
+                    {
+                        label: 'Pop',
+                        data: [50, 52, 55, 58, 60, 62, 65, 70, 73, 75, 78, 80, 83, 85, 88, 90, 92, 95, 96, 97, 98, 99, 100, 98, 96, 94, 92, 90, 88, 86, 85, 83, 81, 80, 78],
+                        borderColor: '#FF5733',
+                        fill: false,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Hip-Hop/R&B',
+                        data: [10, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 97, 98, 99, 100, 99, 97, 95, 93, 90, 88, 85, 83, 81, 80, 78],
+                        borderColor: '#33FF57',
+                        fill: false,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Rock',
+                        data: [70, 72, 75, 78, 80, 83, 85, 88, 90, 92, 95, 98, 100, 99, 97, 95, 93, 91, 90, 88, 86, 85, 83, 81, 80, 78, 76, 74, 72, 70, 68, 66, 65, 63, 61],
+                        borderColor: '#3357FF',
+                        fill: false,
+                        tension: 0.4
+                    }
+                ]
+            };
+            const options = {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Ano' } },
+                    y: { title: { display: true, text: 'Popularidade (%)' }, beginAtZero: true }
+                }
+            };
+            new Chart(ctx, { type: 'line', data, options });
+        }
+
+
+        window.onload = () => {
+            atualizarGraficoPizza();
+            gerarGraficoPopularidade();
+        };
+    </script>
+</body>
+</html>
