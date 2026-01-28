@@ -138,7 +138,11 @@ Abra o arquivo `index.html` diretamente no navegador.
 
 > ⚠️ Certifique-se de que o backend esteja rodando antes de enviar a letra da música.
 
----
+Fotos:
+<img width="839" height="907" alt="image" src="https://github.com/user-attachments/assets/1c6a4c89-a99f-493c-9d58-34b45a1f6aa2" />
+<img width="843" height="666" alt="image" src="https://github.com/user-attachments/assets/f4b2397d-0e5b-42f6-9e88-d38b407ab062" />
+
+
 
 ## ## 📊 Observações
 
